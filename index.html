@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pharmacy System - Database Schema</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+      background: #f0f2f7;
+      color: #2d3748;
+      min-height: 100vh
+    }
+
+    .page-header {
+      background: #fff;
+      border-bottom: 1.5px solid #e2e8f0;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      flex-wrap: wrap;
+      gap: 8px
+    }
+
+    .page-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #4f46e5
+    }
+
+    .page-subtitle {
+      font-size: 10px;
+      color: #94a3b8;
+      margin-top: 2px
+    }
+
+    .legend {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      color: #64748b
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0
+    }
+
+    /* CANVAS */
+    .canvas-wrapper {
+      width: 100%;
+      padding: 28px 20px 80px;
+      overflow-x: hidden
+    }
+
+    #erd-canvas {
+      position: relative;
+      width: 100%
+    }
+
+    svg#lines-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      overflow: visible;
+      width: 100%;
+      height: 100%
+    }
+
+    /* TABLE CARDS — width is set by JS */
+    .tbl {
+      position: absolute;
+      background: #fff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+      font-size: 11px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      transition: box-shadow .18s, border-color .18s;
+      cursor: pointer
+    }
+
+    .tbl:hover {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.13), 0 4px 16px rgba(0, 0, 0, 0.1);
+      z-index: 10
+    }
+
+    .tbl-header {
+      padding: 8px 10px 7px;
+      font-weight: 700;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      border-bottom: 1px solid #f1f5f9
+    }
+
+    .tbl-name {
+      color: #1e293b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+
+    .tbl-tag {
+      font-size: 8px;
+      padding: 1px 5px;
+      border-radius: 20px;
+      font-weight: 600;
+      margin-right: auto;
+      white-space: nowrap;
+      flex-shrink: 0
+    }
+
+    .tbl-desc {
+      padding: 5px 10px 6px;
+      font-size: 9px;
+      color: #94a3b8;
+      border-bottom: 1px solid #f8fafc;
+      line-height: 1.45;
+      direction: rtl;
+      text-align: right
+    }
+
+    .tbl-row {
+      display: flex;
+      align-items: flex-start;
+      padding: 3px 10px;
+      border-bottom: 1px solid #f8fafc;
+      gap: 4px
+    }
+
+    .tbl-row:last-child {
+      border-bottom: none
+    }
+
+    .tbl-row:hover {
+      background: #f8fafc
+    }
+
+    .col-key {
+      font-size: 7.5px;
+      font-weight: 700;
+      width: 18px;
+      flex-shrink: 0;
+      padding-top: 2px
+    }
+
+    .col-name {
+      flex: 1;
+      color: #334155;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 9.5px;
+      line-height: 1.3;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap
+    }
+
+    .col-type {
+      font-size: 8px;
+      color: #cbd5e1;
+      font-family: monospace;
+      flex-shrink: 0;
+      padding-top: 2px
+    }
+
+    .col-desc {
+      font-size: 8px;
+      color: #94a3b8;
+      display: block;
+      direction: rtl;
+      margin-top: 1px;
+      font-family: 'Segoe UI', sans-serif;
+      white-space: normal
+    }
+
+    .pk {
+      color: #d97706
+    }
+
+    .fk {
+      color: #3b82f6
+    }
+
+    /* CATEGORIES */
+    .cat-geo .tbl-header {
+      background: #fef9ee
+    }
+
+    .cat-geo .tbl-name {
+      color: #92400e
+    }
+
+    .cat-geo .tbl-tag {
+      background: #fef3c7;
+      color: #92400e
+    }
+
+    .cat-geo {
+      border-color: #fde68a
+    }
+
+    .cat-user .tbl-header {
+      background: #eff6ff
+    }
+
+    .cat-user .tbl-name {
+      color: #1d4ed8
+    }
+
+    .cat-user .tbl-tag {
+      background: #dbeafe;
+      color: #1d4ed8
+    }
+
+    .cat-user {
+      border-color: #bfdbfe
+    }
+
+    .cat-drug .tbl-header {
+      background: #f0fdf4
+    }
+
+    .cat-drug .tbl-name {
+      color: #15803d
+    }
+
+    .cat-drug .tbl-tag {
+      background: #dcfce7;
+      color: #15803d
+    }
+
+    .cat-drug {
+      border-color: #bbf7d0
+    }
+
+    .cat-pharmacy.tbl-header {
+      background: #fff7ed
+    }
+
+    .cat-pharmacy.tbl-name {
+      color: #c2410c
+    }
+
+    .cat-pharmacy.tbl-tag {
+      background: #ffedd5;
+      color: #c2410c
+    }
+
+    .cat-pharmacy {
+      border-color: #fed7aa
+    }
+
+    .cat-analytics.tbl-header {
+      background: #faf5ff
+    }
+
+    .cat-analytics.tbl-name {
+      color: #6d28d9
+    }
+
+    .cat-analytics.tbl-tag {
+      background: #ede9fe;
+      color: #6d28d9
+    }
+
+    .cat-analytics {
+      border-color: #ddd6fe
+    }
+
+    .cat-social .tbl-header {
+      background: #fdf2f8
+    }
+
+    .cat-social .tbl-name {
+      color: #9d174d
+    }
+
+    .cat-social .tbl-tag {
+      background: #fce7f3;
+      color: #9d174d
+    }
+
+    .cat-social {
+      border-color: #fbcfe8
+    }
+
+    .cat-log .tbl-header {
+      background: #f0fdfa
+    }
+
+    .cat-log .tbl-name {
+      color: #0f766e
+    }
+
+    .cat-log .tbl-tag {
+      background: #ccfbf1;
+      color: #0f766e
+    }
+
+    .cat-log {
+      border-color: #99f6e4
+    }
+
+    /* MODAL */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15, 23, 42, 0.38);
+      backdrop-filter: blur(3px)
+    }
+
+    .overlay.active {
+      display: flex
+    }
+
+    .modal {
+      background: #fff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 22px;
+      max-width: 500px;
+      width: 93%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+      direction: rtl;
+      text-align: right;
+      max-height: 85vh;
+      overflow-y: auto
+    }
+
+    .modal-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1e293b;
+      font-family: monospace
+    }
+
+    .modal-cat {
+      font-size: 10px;
+      color: #94a3b8;
+      margin: 4px 0 10px;
+      text-transform: uppercase;
+      letter-spacing: .4px
+    }
+
+    .modal-desc {
+      font-size: 12.5px;
+      color: #475569;
+      line-height: 1.7;
+      margin-bottom: 14px;
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: 11px 13px
+    }
+
+    .modal-rels-title {
+      font-size: 10px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      margin-bottom: 7px
+    }
+
+    .modal-rel {
+      background: #f8fafc;
+      border-radius: 6px;
+      padding: 7px 10px;
+      margin-bottom: 5px;
+      font-size: 10.5px;
+      direction: ltr;
+      text-align: left
+    }
+
+    .modal-rel .rf {
+      color: #1d4ed8;
+      font-family: monospace
+    }
+
+    .modal-rel .ra {
+      color: #6366f1;
+      font-weight: 700;
+      margin: 0 6px
+    }
+
+    .modal-rel .rt {
+      color: #059669;
+      font-family: monospace
+    }
+
+    .modal-rel .rd {
+      color: #94a3b8;
+      font-size: 9.5px;
+      display: block;
+      margin-top: 2px;
+      direction: rtl;
+      text-align: right
+    }
+
+    .modal-close {
+      margin-top: 16px;
+      padding: 8px 22px;
+      background: #f1f5f9;
+      border: 1.5px solid #e2e8f0;
+      color: #475569;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      font-family: inherit;
+      transition: background .15s
+    }
+
+    .modal-close:hover {
+      background: #e2e8f0
+    }
+
+    .hint-bar {
+      position: fixed;
+      bottom: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      padding: 7px 18px;
+      border-radius: 20px;
+      font-size: 10px;
+      color: #94a3b8;
+      z-index: 50;
+      pointer-events: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+      white-space: nowrap
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="page-header">
+    <div>
+      <div class="page-title">Pharmacy System — Database Schema</div>
+      <div class="page-subtitle">اضغط على اي جدول لعرض شرح تفصيلي وعلاقاته</div>
+    </div>
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#f59e0b"></div>جغرافيا
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#3b82f6"></div>مستخدمون
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#22c55e"></div>ادوية
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#f97316"></div>صيدليات
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#8b5cf6"></div>تحليلات
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#ec4899"></div>تفاعل
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#14b8a6"></div>سجلات
+      </div>
+      <span style="width:1px;height:16px;background:#e2e8f0;display:inline-block"></span>
+      <div class="legend-item"><span style="color:#d97706;font-weight:700;font-size:10px">PK</span></div>
+      <div class="legend-item"><span style="color:#3b82f6;font-weight:700;font-size:10px">FK</span></div>
+    </div>
+  </div>
+
+  <div class="canvas-wrapper">
+    <div id="erd-canvas">
+      <svg id="lines-layer" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arr-blue" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+            <path d="M0,0 L7,3.5 L0,7 Z" fill="#3b82f6" opacity="0.7" />
+          </marker>
+          <marker id="arr-amber" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+            <path d="M0,0 L7,3.5 L0,7 Z" fill="#f59e0b" opacity="0.7" />
+          </marker>
+          <marker id="arr-green" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+            <path d="M0,0 L7,3.5 L0,7 Z" fill="#22c55e" opacity="0.7" />
+          </marker>
+          <marker id="arr-orange" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+            <path d="M0,0 L7,3.5 L0,7 Z" fill="#f97316" opacity="0.7" />
+          </marker>
+          <marker id="arr-purple" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+            <path d="M0,0 L7,3.5 L0,7 Z" fill="#8b5cf6" opacity="0.7" />
+          </marker>
+          <marker id="arr-teal" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+            <path d="M0,0 L7,3.5 L0,7 Z" fill="#14b8a6" opacity="0.7" />
+          </marker>
+        </defs>
+      </svg>
+
+      <!-- Tables are injected here by JS -->
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div class="overlay" id="overlay" onclick="closeModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-title" id="m-title"></div>
+      <div class="modal-cat" id="m-cat"></div>
+      <div class="modal-desc" id="m-desc"></div>
+      <div class="modal-rels-title">العلاقات مع الجداول الاخرى</div>
+      <div id="m-rels"></div>
+      <button class="modal-close" onclick="document.getElementById('overlay').classList.remove('active')">اغلاق</button>
+    </div>
+  </div>
+  <div class="hint-bar">اضغط على اي جدول لعرض الشرح التفصيلي وعلاقاته</div>
+
+  <script>
+    /* ══════════════════════════════════════════════════════════════════
+     TABLE DEFINITIONS
+     ══════════════════════════════════════════════════════════════════ */
+    const TABLES = [
+      /* ── GEO ── */
+      {
+        id: 'countries', cat: 'فئة: الجغرافيا', cls: 'cat-geo', tag: 'GEO',
+        desc: 'جدول الدول. الطبقة العليا في هيكل الجغرافيا: دولة → محافظة → مدينة.',
+        cols: [
+          { key: 'PK', name: 'id', type: 'bigint' },
+          { key: '', name: 'name', cdesc: 'اسم الدولة', type: 'varchar' },
+        ],
+        rels: [{ f: 'countries.id', t: 'governorates.country_id', type: '1 -> *', d: 'كل دولة فيها محافظات متعددة' }],
+        group: 'geo'
+      },
+      {
+        id: 'governorates', cat: 'فئة: الجغرافيا', cls: 'cat-geo', tag: 'GEO',
+        desc: 'المحافظات. كل محافظة تنتمي لدولة وتحتوي على مدن.',
+        cols: [
+          { key: 'PK', name: 'id', type: 'bigint' },
+          { key: 'FK', name: 'country_id', cdesc: 'مرتبط بـ countries.id', type: 'bigint' },
+          { key: '', name: 'name', cdesc: 'اسم المحافظة', type: 'varchar' },
+        ],
+        rels: [
+          { f: 'governorates.country_id', t: 'countries.id', type: '* -> 1', d: 'كل محافظة تنتمي لدولة' },
+          { f: 'governorates.id', t: 'cities.governorate_id', type: '1 -> *', d: 'كل محافظة فيها مدن' },
+        ],
+        group: 'geo'
+      },
+      {
+        id: 'cities', cat: 'فئة: الجغرافيا', cls: 'cat-geo', tag: 'GEO',
+        desc: 'المدن. تستخدم كمرجع لتحديد موقع المستخدمين والصيدليات.',
+        cols: [
+          { key: 'PK', name: 'id', type: 'bigint' },
+          { key: 'FK', name: 'governorate_id', cdesc: 'مرتبط بـ governorates.id', type: 'bigint' },
+          { key: '', name: 'name', cdesc: 'اسم المدينة', type: 'varchar' },
+        ],
+        rels: [
+          { f: 'cities.governorate_id', t: 'governorates.id', type: '* -> 1', d: 'كل مدينة تنتمي لمحافظة' },
+          { f: 'cities.id', t: 'users.city_id', type: '1 -> *', d: 'المستخدمين مرتبطين بمدينة' },
+          { f: 'cities.id', t: 'pharmacies.city_id', type: '1 -> *', d: 'الصيدليات مرتبطة بمدينة' },
+        ],
+        group: 'geo'
+      },
+
+      /* ── USERS ── */
+      {
+        id: 'users', cat: 'فئة: المستخدمون', cls: 'cat-user', tag: 'USER',
+        desc: 'الجدول الاساسي للمستخدمين. يخزن بيانات كل شخص مسجل سواء عميل أو موظف صيدلية أو مدير نظام.',
+        cols: [
+          { key: 'PK', name: 'id', type: 'bigint' },
+          { key: '', name: 'first_name', cdesc: 'الاسم الاول', type: 'varchar' },
+          { key: '', name: 'last_name', cdesc: 'اسم العائلة', type: 'varchar' },
+          { key: '', name: 'email', cdesc: 'البريد الالكتروني', type: 'varchar' },
+          { key: '', name: 'password_hash', cdesc: 'كلمة المرور مشفرة', type: 'varchar' },
+          { key: '', name: 'phone', cdesc: 'رقم الهاتف', type: 'varchar' },
+          { key: '', name: 'role', cdesc: 'admin / user / staff', type: 'varchar' },
+          { key: 'FK', name: 'city_id', cdesc: 'مرتبط بـ cities.id', type: 'bigint' },
+          { key: '', name: 'is_active', cdesc: 'هل الحساب مفعل', type: 'boolean' },
+          { key: '', name: 'created_at', type: 'timestamp' },
+          { key: '', name: 'updated_at', type: 'timestamp' },
+        ],
+        rels: [
+          { f: 'users.city_id', t: 'cities.id', type: '* -> 1', d: 'كل مستخدم مرتبط بمدينة' },
+          { f: 'users.id', t: 'pharmacy_staff.user_id', type: '1 -> *', d: 'الموظف مرتبط بحساب مستخدم' },
+          { f: 'users.id', t: 'favorites.user_id', type: '1 -> *', d: 'المستخدم يحفظ ادوية في المفضلة' },
+          { f: 'users.id', t: 'pharmacy_ratings.user_id', type: '1 -> *', d: 'المستخدم يقيم الصيدليات' },
+          { f: 'users.id', t: 'notifications.user_id', type: '1 -> *', d: 'الاشعارات مرسلة لمستخدم محدد' },
+          { f: 'users.id', t: 'search_logs.user_id', type: '1 -> *', d: 'عمليات البحث مرتبطة بالمستخدم' },
+        ],
+        group: 'user'
+      },
+      {
+        id: 'notifications', cat: 'فئة: السجلات', cls: 'cat-log', tag: 'LOG',
+        desc: 'الاشعارات. يخزن كل رسالة ارسلها النظام لمستخدم مع تتبع حالة القراءة.',
+        cols: [
+          { key: 'PK', name: 'id', type: 'bigint' },
+          { key: 'FK', name: 'user_id', cdesc: 'مرتبط بـ users.id', type: 'bigint' },
+          { key: '', name: 'notification_type', cdesc: 'نوع الاشعار', type: 'varchar' },
+          { key: '', name: 'title', cdesc: 'عنوان الاشعار', type: 'varchar' },
+          { key: '', name: 'message', cdesc: 'نص الرسالة', type: 'text' },
+          { key: '', name: 'is_read', cdesc: 'هل تم قراءتها', type: 'boolean' },
+          { key: '', name: 'created_at', type: 'timestamp' },
+        ],
+        rels: [{ f: 'notifications.user_id', t: 'users.id', type: '* -> 1', d: 'الاشعار موجه لمستخدم محدد' }],
+        group: 'user'
+      },
+      {
+        id: 'search_logs', cat: 'فئة: السجلات', cls: 'cat-log', tag: 'LOG',
+        desc: 'سجل عمليات البحث. يُستخدم لتحليل اكثر الادوية المبحوث عنها.',
+        cols: [
+          { key: 'PK', name: 'id', type: 'bigint' },
+          { key: 'FK', name: 'user_id', cdesc: 'مرتبط بـ users.id', type: 'bigint' },
+          { key: '', name: 'search_text', cdesc: 'نص ما تم البحث عنه', type: 'varchar' },
+          { key: '', name: 'searched_at', type: 'timestamp' },
+        ],
+        rels: [{ f: 'search_logs.user_id', t: 'users.id', type: '* -> 1', d: 'البحث مرتبط بمستخدم' }],
+        group: 'user'
+      },
+
+      /* ── DRUGS ── */
+      {
+        id: 'drug_categories', cat: 'فئة: الادوية', cls: 'cat-drug', tag: 'DRUG',
+        desc: 'تصنيفات الادوية. مضادات حيوية / مسكنات / فيتامينات.',
+        cols: [
+          { key: 'PK', name: 'id', type: 'bigint' },
+          { key: '', name: 'name', cdesc: 'اسم التصنيف', type: 'varchar' },
+          { key: '', name: 'description', cdesc: 'وصف التصنيف', type: 'text' },
+          { key: '', name: 'created_at', type: 'timestamp' },
+        ],
+        rels: [{ f: 'drug_categories.id', t: 'drugs.category_id', type: '1 -> *', d: 'كل تصنيف ينتمي له ادوية متعددة' }],
+        group: 'drug'
+      },
+      {
+        id: 'drugs', cat: 'فئة: الادوية', cls: 'cat-drug', tag: 'DRUG',
+        desc: 'الجدول الرئيسي للادوية. يحتوي بيانات كل دواء: الاسم التجاري والمادة الفعالة وشكل الجرعة والتركيز والشركة المصنعة.',
+        cols: [
+          { key: 'PK', name: 'id', type: 'bigint' },
+          { key: 'FK', name: 'category_id', cdesc: 'مرتبط بـ drug_categories.id', type: 'bigint' },
+          { key: '', name: 'name', cdesc: 'الاسم التجاري', type: 'varchar' },
+          { key: '', name: 'active_substance', cdesc: 'المادة الفعالة', type: 'varchar' },
+          { key: '', name: 'dosage_form', cdesc: 'حبوب / شراب / حقن', type: 'varchar' },
+          { key: '', name: 'strength', cdesc: 'التركيز مثل 500mg', type: 'varchar' },
+          { key: '', name: 'manufacturer', cdesc: 'الشركة المصنعة', type: 'varchar' },
+          { key: '', name: 'description', cdesc: 'وصف واستخدامات الدواء', type: 'text' },
+          { key: '', name: 'image_url', cdesc: 'رابط صورة الدواء', type: 'text' },
+          { key: '', name: 'created_at', type: 'timestamp' },
+          { key: '', name: 'updated_at', type: 'timestamp' },
+        ],
+        rels: [
+          { f: 'drugs.category_id', t: 'drug_categories.id', type: '* -> 1', d: 'كل دواء ينتمي لتصنيف' },
+          { f: 'drugs.id', t: 'drug_tags.drug_id', type: '1 -> *', d: 'كل دواء له تاجات' },
+          { f: 'drugs.id', t: 'drug_alternatives.drug_id', type: '1 -> *', d: 'كل دواء له بدائل' },
+          { f: 'drugs.id', t: 'pharmacy_inventory.drug_id', type: '1 -> *', d: 'الدواء متاح في صيدليات متعددة' },
+          { f: 'drugs.id', t: 'favorites.drug_id', type: '1 -> *', d: 'الدواء في مفضلة مستخدمين' },
+          { f: 'drugs.id', t: 'price_history.drug_id', type: '1 -> *', d: 'سجل اسعار الدواء' },
+          { f: 'drugs.id', t: 'availability_history.drug_id', type: '1 -> *', d: 'سجل توفر الدواء' },
+          { f: 'drugs.id', t: 'demand_logs.drug_id', type: '1 -> *', d: 'سجل الطلب على الدواء' },
+          { f: 'drugs.id', t: 'drug_analytics.drug_id', type: '1 -> 1', d: 'ملخص احصائي للدواء' },
+          { f: 'drugs.id', t: 'alerts.drug_id', type: '1 -> *', d: 'التنبيهات المتعلقة بالدواء' },
+        ],
+        group: 'drug'
+      },
+      {
+        id: 'drug_tags', cat: 'فئة: الادوية', cls: 'cat-drug', tag: 'DRUG',
+        desc: 'الكلمات الدلالية للادوية. تساعد في البحث: خافض حرارة، مسكن، مضاد حيوي.',
+        cols: [
+          { key: 'PK', name: 'id', type: 'bigint' },
+          { key: 'FK', name: 'drug_id', cdesc: 'مرتبط بـ drugs.id', type: 'bigint' },
+          { key: '', name: 'tag_name', cdesc: 'اسم الكلمة الدلالية', type: 'varchar' },
+        ],
+        rels: [{ f: 'drug_tags.drug_id', t: 'drugs.id', type: '* -> 1', d: 'كل تاج ينتمي لدواء واحد' }],
+        group: 'drug'
+      },
+      {
+        id: 'drug_alternatives', cat: 'فئة: الادوية', cls: 'cat-drug', tag: 'DRUG',
+        desc: 'بدائل الادوية. علاقة self-referencing على جدول drugs.',
+        cols: [
+          { key: 'PK', name: 'id', type: 'bigint' },
+          { key: 'FK', name: 'drug_id', cdesc: 'الدواء الاصلي', type: 'bigint' },
+          { key: 'FK', name: 'alternative_drug_id', cdesc: 'الدواء البديل (نفس جدول drugs)', type: 'bigint' },
+        ],
+        rels: [
+          { f: 'drug_alternatives.drug_id', t: 'drugs.id', type: '* -> 1', d: 'الدواء الاصلي' },
+          { f: 'drug_alternatives.alternative_drug_id', t: 'drugs.id', type: '* -> 1', d: 'الدواء البديل' },
+        ],
+        group: 'drug'
+      },
+
+      /* ── PHARMACY ── */
+      {
+        id: 'pharmacies', cat: 'فئة: الصيدليات', cls: 'cat-pharmacy', tag: 'PHARMACY',
+        desc: 'الصيدليات المسجلة. الموقع عبر city_id بدلاً من GPS.',
+        cols: [
+          { key: 'PK', name: 'id', type: 'bigint' },
+          { key: '', name: 'name', cdesc: 'اسم الصيدلية', type: 'varchar' },
+          { key: '', name: 'phone', cdesc: 'رقم التليفون', type: 'varchar' },
+          { key: '', name: 'email', cdesc: 'البريد الالكتروني', type: 'varchar' },
+          { key: 'FK', name: 'city_id', cdesc: 'مرتبط بـ cities.id', type: 'bigint' },
+          { key: '', name: 'address', cdesc: 'العنوان التفصيلي', type: 'text' },
+          { key: '', name: 'is_active', cdesc: 'هل الصيدلية نشطة', type: 'boolean' },
+          { key: '', name: 'created_at', type: 'timestamp' },
+        ],
+        rels: [
+          { f: 'pharmacies.city_id', t: 'cities.id', type: '* -> 1', d: 'كل صيدلية مرتبطة بمدينة' },
+          { f: 'pharmacies.id', t: 'pharmacy_staff.pharmacy_id', type: '1 -> *', d: 'الصيدلية فيها موظفين' },
+          { f: 'pharmacies.id', t: 'pharmacy_inventory.pharmacy_id', type: '1 -> *', d: 'مخزون الصيدلية' },
+          { f: 'pharmacies.id', t: 'pharmacy_ratings.pharmacy_id', type: '1 -> *', d: 'تقييمات المستخدمين' },
+          { f: 'pharmacies.id', t: 'price_history.pharmacy_id', type: '1 -> *', d: 'سجل الاسعار' },
+          { f: 'pharmacies.id', t: 'availability_history.pharmacy_id', type: '1 -> *', d: 'سجل التوفر' },
+          { f: 'pharmacies.id', t: 'alerts.pharmacy_id', type: '1 -> *', d: 'التنبيهات' },
+        ],
+        group: 'pharmacy'
+      },
+      {
+        id: 'pharmacy_staff', cat: 'فئة: الصيدليات', cls: 'cat-pharmacy', tag: 'PHARMACY',
+        desc: 'موظفو الصيدليات. جدول وسيط يربط users بـ pharmacies.',
+        cols: [
+          { key: 'PK', name: 'id', type: 'bigint' },
+          { key: 'FK', name: 'user_id', cdesc: 'مرتبط بـ users.id', type: 'bigint' },
+          { key: 'FK', name: 'pharmacy_id', cdesc: 'مرتبط بـ pharmacies.id', type: 'bigint' },
+          { key: '', name: 'role', cdesc: 'pharmacist / manager', type: 'varchar' },
+          { key: '', name: 'created_at', type: 'timestamp' },
+        ],
+        rels: [
+          { f: 'pharmacy_staff.user_id', t: 'users.id', type: '* -> 1', d: 'الموظف هو مستخدم في النظام' },
+          { f: 'pharmacy_staff.pharmacy_id', t: 'pharmacies.id', type: '* -> 1', d: 'الموظف تابع لصيدلية' },
+        ],
+        group: 'pharmacy'
+      },
+      {
+        id: 'pharmacy_inventory', cat: 'فئة: الصيدليات', cls: 'cat-pharmacy', tag: 'PHARMACY',
+        desc: 'مخزون الصيدليات. الجدول الوسيط بين drugs وpharmacies.',
+        cols: [
+          { key: 'PK', name: 'id', type: 'bigint' },
+          { key: 'FK', name: 'pharmacy_id', cdesc: 'مرتبط بـ pharmacies.id', type: 'bigint' },
+          { key: 'FK', name: 'drug_id', cdesc: 'مرتبط بـ drugs.id', type: 'bigint' },
+          { key: '', name: 'quantity', cdesc: 'الكمية المتاحة', type: 'int' },
+          { key: '', name: 'minimum_stock', cdesc: 'الحد الادنى للتنبيه', type: 'int' },
+          { key: '', name: 'price', cdesc: 'سعر البيع هنا', type: 'decimal' },
+          { key: '', name: 'last_updated', type: 'timestamp' },
+        ],
+        rels: [
+          { f: 'pharmacy_inventory.pharmacy_id', t: 'pharmacies.id', type: '* -> 1', d: 'المخزون ينتمي لصيدلية' },
+          { f: 'pharmacy_inventory.drug_id', t: 'drugs.id', type: '* -> 1', d: 'المخزون لدواء محدد' },
+        ],
+        group: 'pharmacy'
+      },
+
+      /* ── ANALYTICS ── */
+      {
+        id: 'price_history', cat: 'فئة: التحليلات', cls: 'cat-analytics', tag: 'ANALYTICS',
+        desc: 'سجل الاسعار التاريخي. يتتبع كل تغيير في سعر دواء في صيدلية معينة.',
+        cols: [
+          { key: 'PK', name: 'id', type: 'bigint' },
+          { key: 'FK', name: 'drug_id', cdesc: 'مرتبط بـ drugs.id', type: 'bigint' },
+          { key: 'FK', name: 'pharmacy_id', cdesc: 'مرتبط بـ pharmacies.id', type: 'bigint' },
+          { key: '', name: 'price', cdesc: 'السعر وقت التسجيل', type: 'decimal' },
+          { key: '', name: 'recorded_at', type: 'timestamp' },
+        ],
+        rels: [
+          { f: 'price_history.drug_id', t: 'drugs.id', type: '* -> 1', d: 'السعر لدواء معين' },
+          { f: 'price_history.pharmacy_id', t: 'pharmacies.id', type: '* -> 1', d: 'السعر في صيدلية معينة' },
+        ],
+        group: 'analytics'
+      },
+      {
+        id: 'availability_history', cat: 'فئة: التحليلات', cls: 'cat-analytics', tag: 'ANALYTICS',
+        desc: 'سجل توفر الادوية. يتتبع هل الدواء كان موجوداً في كل لحظة.',
+        cols: [
+          { key: 'PK', name: 'id', type: 'bigint' },
+          { key: 'FK', name: 'drug_id', cdesc: 'مرتبط بـ drugs.id', type: 'bigint' },
+          { key: 'FK', name: 'pharmacy_id', cdesc: 'مرتبط بـ pharmacies.id', type: 'bigint' },
+          { key: '', name: 'available', cdesc: 'true = متاح / false = غير متاح', type: 'boolean' },
+          { key: '', name: 'checked_at', type: 'timestamp' },
+        ],
+        rels: [
+          { f: 'availability_history.drug_id', t: 'drugs.id', type: '* -> 1', d: 'التوفر لدواء معين' },
+          { f: 'availability_history.pharmacy_id', t: 'pharmacies.id', type: '* -> 1', d: 'التوفر في صيدلية معينة' },
+        ],
+        group: 'analytics'
+      },
+      {
+        id: 'demand_logs', cat: 'فئة: التحليلات', cls: 'cat-analytics', tag: 'ANALYTICS',
+        desc: 'سجل الطلب على الادوية. يقيس حجم الطلب بناءً على عمليات البحث.',
+        cols: [
+          { key: 'PK', name: 'id', type: 'bigint' },
+          { key: 'FK', name: 'drug_id', cdesc: 'مرتبط بـ drugs.id', type: 'bigint' },
+          { key: '', name: 'demand_score', cdesc: 'رقم يعبر عن حجم الطلب', type: 'decimal' },
+          { key: '', name: 'recorded_at', type: 'timestamp' },
+        ],
+        rels: [{ f: 'demand_logs.drug_id', t: 'drugs.id', type: '* -> 1', d: 'سجل الطلب لدواء معين' }],
+        group: 'analytics'
+      },
+      {
+        id: 'drug_analytics', cat: 'فئة: التحليلات', cls: 'cat-analytics', tag: 'ANALYTICS',
+        desc: 'الملخص الاحصائي للادوية. يُحسب دورياً: متوسط السعر، أدنى، أعلى، نسبة التوفر.',
+        cols: [
+          { key: 'PK', name: 'id', type: 'bigint' },
+          { key: 'FK', name: 'drug_id', cdesc: 'مرتبط بـ drugs.id', type: 'bigint' },
+          { key: '', name: 'avg_price', cdesc: 'متوسط السعر', type: 'decimal' },
+          { key: '', name: 'min_price', cdesc: 'اقل سعر متاح', type: 'decimal' },
+          { key: '', name: 'max_price', cdesc: 'اعلى سعر متاح', type: 'decimal' },
+          { key: '', name: 'availability_percentage', cdesc: 'نسبة التوفر', type: 'decimal' },
+          { key: '', name: 'calculated_at', type: 'timestamp' },
+        ],
+        rels: [{ f: 'drug_analytics.drug_id', t: 'drugs.id', type: '* -> 1', d: 'الاحصائيات لدواء معين' }],
+        group: 'analytics'
+      },
+      {
+        id: 'alerts', cat: 'فئة: التحليلات', cls: 'cat-analytics', tag: 'ANALYTICS',
+        desc: 'التنبيهات التلقائية عند نفاد الدواء أو انخفاض المخزون عن الحد الأدنى.',
+        cols: [
+          { key: 'PK', name: 'id', type: 'bigint' },
+          { key: 'FK', name: 'drug_id', cdesc: 'مرتبط بـ drugs.id', type: 'bigint' },
+          { key: 'FK', name: 'pharmacy_id', cdesc: 'مرتبط بـ pharmacies.id', type: 'bigint' },
+          { key: '', name: 'alert_type', cdesc: 'low_stock / out_of_stock', type: 'varchar' },
+          { key: '', name: 'created_at', type: 'timestamp' },
+        ],
+        rels: [
+          { f: 'alerts.drug_id', t: 'drugs.id', type: '* -> 1', d: 'التنبيه لدواء معين' },
+          { f: 'alerts.pharmacy_id', t: 'pharmacies.id', type: '* -> 1', d: 'التنبيه من صيدلية معينة' },
+        ],
+        group: 'analytics'
+      },
+
+      /* ── SOCIAL ── */
+      {
+        id: 'favorites', cat: 'فئة: التفاعل الاجتماعي', cls: 'cat-social', tag: 'SOCIAL',
+        desc: 'قائمة المفضلة. جدول وسيط بين users وdrugs.',
+        cols: [
+          { key: 'PK', name: 'id', type: 'bigint' },
+          { key: 'FK', name: 'user_id', cdesc: 'مرتبط بـ users.id', type: 'bigint' },
+          { key: 'FK', name: 'drug_id', cdesc: 'مرتبط بـ drugs.id', type: 'bigint' },
+          { key: '', name: 'created_at', type: 'timestamp' },
+        ],
+        rels: [
+          { f: 'favorites.user_id', t: 'users.id', type: '* -> 1', d: 'المفضلة تنتمي لمستخدم' },
+          { f: 'favorites.drug_id', t: 'drugs.id', type: '* -> 1', d: 'الدواء المحفوظ' },
+        ],
+        group: 'social'
+      },
+      {
+        id: 'pharmacy_ratings', cat: 'فئة: التفاعل الاجتماعي', cls: 'cat-social', tag: 'SOCIAL',
+        desc: 'تقييمات الصيدليات. كل مستخدم يقيّم صيدلية مرة واحدة فقط.',
+        cols: [
+          { key: 'PK', name: 'id', type: 'bigint' },
+          { key: 'FK', name: 'user_id', cdesc: 'مرتبط بـ users.id', type: 'bigint' },
+          { key: 'FK', name: 'pharmacy_id', cdesc: 'مرتبط بـ pharmacies.id', type: 'bigint' },
+          { key: '', name: 'rating', cdesc: 'التقييم من 1 الى 5', type: 'int' },
+          { key: '', name: 'review', cdesc: 'نص المراجعة', type: 'text' },
+          { key: '', name: 'created_at', type: 'timestamp' },
+        ],
+        rels: [
+          { f: 'pharmacy_ratings.user_id', t: 'users.id', type: '* -> 1', d: 'التقييم من مستخدم' },
+          { f: 'pharmacy_ratings.pharmacy_id', t: 'pharmacies.id', type: '* -> 1', d: 'التقييم لصيدلية' },
+        ],
+        group: 'social'
+      },
+    ];
+
+    /* ══════════════════════════════════════════════════════════════════
+       MODAL LOGIC
+       ══════════════════════════════════════════════════════════════════ */
+    function showDetail(id) {
+      const t = TABLES.find(x => x.id === id);
+      if (!t) return;
+      document.getElementById('m-title').textContent = t.id;
+      document.getElementById('m-cat').textContent = t.cat;
+      document.getElementById('m-desc').textContent = t.desc;
+      const rEl = document.getElementById('m-rels');
+      rEl.innerHTML = '';
+      t.rels.forEach(r => {
+        const div = document.createElement('div');
+        div.className = 'modal-rel';
+        div.innerHTML = `<span class="rf">${r.f}</span><span class="ra">${r.type}</span><span class="rt">${r.t}</span><span class="rd">${r.d}</span>`;
+        rEl.appendChild(div);
+      });
+      document.getElementById('overlay').classList.add('active');
+    }
+    function closeModal(e) {
+      if (e.target === document.getElementById('overlay'))
+        document.getElementById('overlay').classList.remove('active');
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+       BUILD TABLE HTML
+       ══════════════════════════════════════════════════════════════════ */
+    function buildTableHTML(t) {
+      const rows = t.cols.map(c => {
+        const keyClass = c.key === 'PK' ? 'pk' : c.key === 'FK' ? 'fk' : '';
+        const desc = c.cdesc ? `<span class="col-desc">${c.cdesc}</span>` : '';
+        return `<div class="tbl-row">
+      <span class="col-key ${keyClass}">${c.key}</span>
+      <span class="col-name">${c.name}${desc}</span>
+      <span class="col-type">${c.type}</span>
+    </div>`;
+      }).join('');
+      return `<div class="tbl ${t.cls}" id="t-${t.id}" onclick="showDetail('${t.id}')">
+    <div class="tbl-header"><span class="tbl-name">${t.id}</span><span class="tbl-tag">${t.tag}</span></div>
+    <div class="tbl-desc">${t.desc.substring(0, 60)}${t.desc.length > 60 ? '...' : ''}</div>
+    ${rows}
+  </div>`;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+       RESPONSIVE LAYOUT ENGINE
+       ══════════════════════════════════════════════════════════════════ */
+    const GROUPS = ['geo', 'user', 'drug', 'pharmacy', 'analytics', 'social'];
+
+    function getGrouped() {
+      const g = {};
+      GROUPS.forEach(gr => g[gr] = []);
+      TABLES.forEach(t => g[t.group].push(t));
+      return g;
+    }
+
+    let positions = {};
+
+    function layout() {
+      const canvas = document.getElementById('erd-canvas');
+      const wrapper = document.querySelector('.canvas-wrapper');
+      const availW = wrapper.clientWidth - 40;
+
+      const minColW = 180;
+      const maxColW = 240;
+      const gapX = 40;
+      const gapY = 32;
+
+      const numGroups = GROUPS.length;
+      let numCols = numGroups;
+      let colW;
+      while (numCols >= 1) {
+        colW = Math.floor((availW - gapX * (numCols - 1)) / numCols);
+        if (colW >= minColW) break;
+        numCols--;
+      }
+      colW = Math.min(colW, maxColW);
+
+      TABLES.forEach(t => {
+        const el = document.getElementById('t-' + t.id);
+        if (el) el.style.width = colW + 'px';
+      });
+
+      const grouped = getGrouped();
+
+      const rows = [];
+      for (let i = 0; i < GROUPS.length; i += numCols) {
+        rows.push(GROUPS.slice(i, i + numCols));
+      }
+
+      let canvasH = 0;
+      let curY = 20;
+
+      rows.forEach(rowGroups => {
+        const colData = rowGroups.map((grp, ci) => {
+          const x = 20 + ci * (colW + gapX);
+          let y = curY;
+          const items = grouped[grp].map(t => {
+            const el = document.getElementById('t-' + t.id);
+            const h = el ? el.offsetHeight : 100;
+            const pos = { l: x, t: y, w: colW, h };
+            y += h + gapY;
+            return { id: t.id, pos };
+          });
+          return { items, bottomY: y - gapY };
+        });
+
+        const maxBottom = Math.max(...colData.map(c => c.bottomY));
+        curY = maxBottom + gapY * 2;
+
+        colData.forEach(col => {
+          col.items.forEach(({ id, pos }) => {
+            positions[id] = pos;
+            const el = document.getElementById('t-' + id);
+            if (el) {
+              el.style.left = pos.l + 'px';
+              el.style.top = pos.t + 'px';
+            }
+          });
+        });
+
+        canvasH = Math.max(canvasH, maxBottom + 40);
+      });
+
+      canvas.style.height = (canvasH + 40) + 'px';
+      canvas.style.width = '100%';
+
+      const svgEl = document.getElementById('lines-layer');
+      svgEl.style.width = '100%';
+      svgEl.style.height = (canvasH + 40) + 'px';
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+       LINE DRAWING ENGINE
+       ══════════════════════════════════════════════════════════════════ */
+    function B(id) {
+      const p = positions[id];
+      if (!p) return null;
+      return {
+        l: p.l, t: p.t, r: p.l + p.w, b: p.t + p.h,
+        cx: p.l + p.w / 2, cy: p.t + p.h / 2,
+        w: p.w, h: p.h
+      };
+    }
+
+    function addLine(svg, d, color, marker, dash) {
+      const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      p.setAttribute('d', d);
+      p.setAttribute('fill', 'none');
+      p.setAttribute('stroke', color);
+      p.setAttribute('stroke-width', '1.5');
+      p.setAttribute('stroke-opacity', '0.55');
+      p.setAttribute('marker-end', 'url(#' + marker + ')');
+      if (dash) p.setAttribute('stroke-dasharray', dash);
+      svg.appendChild(p);
+    }
+
+    function orth(fx, fy, tx, ty, opts = {}) {
+      const { midX, midY, busY } = opts;
+      if (busY !== undefined) {
+        return `M${fx},${fy} L${fx},${busY} L${tx},${busY} L${tx},${ty}`;
+      }
+      if (midX !== undefined) {
+        return `M${fx},${fy} L${midX},${fy} L${midX},${ty} L${tx},${ty}`;
+      }
+      if (midY !== undefined) {
+        return `M${fx},${fy} L${fx},${midY} L${tx},${midY} L${tx},${ty}`;
+      }
+      return `M${fx},${fy} L${tx},${ty}`;
+    }
+
+    function drawLines() {
+      const svg = document.getElementById('lines-layer');
+      svg.querySelectorAll('path').forEach(p => p.remove());
+
+      const get = id => B(id);
+
+      function vc(fromId, toId, color, marker) {
+        const a = get(fromId), b2 = get(toId);
+        if (!a || !b2) return;
+        addLine(svg, orth(a.cx, a.b, b2.cx, b2.t), color, marker);
+      }
+
+      function hc(fromId, fdy, toId, tdy, color, marker, dash) {
+        const a = get(fromId), b2 = get(toId);
+        if (!a || !b2) return;
+        const fx = a.r, fy = a.cy + (fdy || 0);
+        const tx = b2.l, ty = b2.cy + (tdy || 0);
+        const midX = (a.r + b2.l) / 2;
+        addLine(svg, orth(fx, fy, tx, ty, { midX }), color, marker, dash);
+      }
+
+      function overTop(fromId, fdy, toId, color, marker, dash) {
+        const a = get(fromId), b2 = get(toId);
+        if (!a || !b2) return;
+        const fx = a.r, fy = a.cy + (fdy || 0);
+        const tx = b2.cx, ty = b2.t;
+        const busY = 6;
+        const rightX = Math.max(a.r, b2.r) + 28;
+        const d = `M${fx},${fy} L${rightX},${fy} L${rightX},${busY} L${tx},${busY} L${tx},${ty}`;
+        addLine(svg, d, color, marker, dash || '5,3');
+      }
+
+      function overTopLeft(fromId, fdy, toId, color, marker, dash) {
+        const a = get(fromId), b2 = get(toId);
+        if (!a || !b2) return;
+        const fx = a.l, fy = a.cy + (fdy || 0);
+        const tx = b2.cx, ty = b2.t;
+        const busY = 6;
+        const leftX = Math.min(a.l, b2.l) - 24;
+        const d = `M${fx},${fy} L${leftX},${fy} L${leftX},${busY} L${tx},${busY} L${tx},${ty}`;
+        addLine(svg, d, color, marker, dash || '5,3');
+      }
+
+      /* ── GEO chain ── */
+      vc('countries', 'governorates', '#f59e0b', 'arr-amber');
+      vc('governorates', 'cities', '#f59e0b', 'arr-amber');
+
+      /* ── GEO → users (cities → users) ── */
+      hc('cities', 0, 'users', 15, '#f59e0b', 'arr-amber');
+
+      /* ── GEO → pharmacies (cities → pharmacies) ── */
+      overTop('cities', -10, 'pharmacies', '#f59e0b', 'arr-amber');
+
+      /* ── USER chain ── */
+      vc('users', 'notifications', '#3b82f6', 'arr-blue');
+      vc('notifications', 'search_logs', '#14b8a6', 'arr-teal');
+
+      /* ── DRUG chain ── */
+      vc('drug_categories', 'drugs', '#22c55e', 'arr-green');
+      vc('drugs', 'drug_tags', '#22c55e', 'arr-green');
+      vc('drug_tags', 'drug_alternatives', '#22c55e', 'arr-green');
+
+      /* ── PHARMACY chain ── */
+      vc('pharmacies', 'pharmacy_staff', '#f97316', 'arr-orange');
+      vc('pharmacy_staff', 'pharmacy_inventory', '#f97316', 'arr-orange');
+
+      /* ── ANALYTICS chain ── */
+      vc('price_history', 'availability_history', '#8b5cf6', 'arr-purple');
+      vc('availability_history', 'demand_logs', '#8b5cf6', 'arr-purple');
+      vc('demand_logs', 'drug_analytics', '#8b5cf6', 'arr-purple');
+      vc('drug_analytics', 'alerts', '#8b5cf6', 'arr-purple');
+
+      /* ── users → pharmacy_staff (cross columns) ── */
+      overTop('users', -20, 'pharmacy_staff', '#3b82f6', 'arr-blue');
+
+      /* ── users → favorites ── */
+      overTop('users', -10, 'favorites', '#3b82f6', 'arr-blue');
+
+      /* ── users → pharmacy_ratings ── */
+      overTop('users', 0, 'pharmacy_ratings', '#3b82f6', 'arr-blue');
+
+      /* ── drugs → pharmacy_inventory ── */
+      hc('drugs', 20, 'pharmacy_inventory', 10, '#22c55e', 'arr-green');
+
+      /* ── drugs → analytics (staggered) ── */
+      const analTargets = [
+        { id: 'price_history', dy: -40 },
+        { id: 'availability_history', dy: -26 },
+        { id: 'demand_logs', dy: -12 },
+        { id: 'drug_analytics', dy: 2 },
+        { id: 'alerts', dy: 16 },
+      ];
+      analTargets.forEach(({ id, dy }) => {
+        const a = get('drugs'), b2 = get(id);
+        if (!a || !b2) return;
+        const fx = a.r, fy = a.cy + dy;
+        const tx = b2.l, ty = b2.cy;
+        const midX = a.r + (b2.l - a.r) * 0.5;
+        addLine(svg, orth(fx, fy, tx, ty, { midX }), '#22c55e', 'arr-green', '4,3');
+      });
+
+      /* ── pharmacies → analytics (price, availability, alerts) ── */
+      [{ id: 'price_history', dy: -18 }, { id: 'availability_history', dy: -6 }, { id: 'alerts', dy: 6 }].forEach(({ id, dy }) => {
+        const a = get('pharmacies'), b2 = get(id);
+        if (!a || !b2) return;
+        const fx = a.r, fy = a.cy + dy;
+        const tx = b2.l, ty = b2.cy;
+        const midX = (a.r + b2.l) / 2;
+        addLine(svg, orth(fx, fy, tx, ty, { midX }), '#f97316', 'arr-orange');
+      });
+
+      /* ── drugs → favorites ── */
+      hc('drugs', -20, 'favorites', -10, '#22c55e', 'arr-green');
+
+      /* ── pharmacies → pharmacy_ratings ── */
+      hc('pharmacies', 20, 'pharmacy_ratings', 10, '#f97316', 'arr-orange');
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+       INIT
+       ══════════════════════════════════════════════════════════════════ */
+    function init() {
+      const canvas = document.getElementById('erd-canvas');
+      const svgEl = document.getElementById('lines-layer');
+      TABLES.forEach(t => {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = buildTableHTML(t);
+        canvas.insertBefore(tmp.firstElementChild, svgEl);
+      });
+
+      layout();
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          layout();
+          // drawLines();
+        });
+      });
+    }
+
+    window.addEventListener('load', () => setTimeout(init, 50));
+
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => { layout(); drawLines(); }, 120);
+    });
+  </script>
+</body>
+
+</html>
