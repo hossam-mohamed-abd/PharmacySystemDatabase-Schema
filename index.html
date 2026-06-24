@@ -1052,121 +1052,121 @@
     }
 
     function drawLines() {
-      const svg = document.getElementById('lines-layer');
-      svg.querySelectorAll('path').forEach(p => p.remove());
+      // const svg = document.getElementById('lines-layer');
+      // svg.querySelectorAll('path').forEach(p => p.remove());
 
-      const get = id => B(id);
+      // const get = id => B(id);
 
-      function vc(fromId, toId, color, marker) {
-        const a = get(fromId), b2 = get(toId);
-        if (!a || !b2) return;
-        addLine(svg, orth(a.cx, a.b, b2.cx, b2.t), color, marker);
-      }
+      // function vc(fromId, toId, color, marker) {
+      //   const a = get(fromId), b2 = get(toId);
+      //   if (!a || !b2) return;
+      //   addLine(svg, orth(a.cx, a.b, b2.cx, b2.t), color, marker);
+      // }
 
-      function hc(fromId, fdy, toId, tdy, color, marker, dash) {
-        const a = get(fromId), b2 = get(toId);
-        if (!a || !b2) return;
-        const fx = a.r, fy = a.cy + (fdy || 0);
-        const tx = b2.l, ty = b2.cy + (tdy || 0);
-        const midX = (a.r + b2.l) / 2;
-        addLine(svg, orth(fx, fy, tx, ty, { midX }), color, marker, dash);
-      }
+      // function hc(fromId, fdy, toId, tdy, color, marker, dash) {
+      //   const a = get(fromId), b2 = get(toId);
+      //   if (!a || !b2) return;
+      //   const fx = a.r, fy = a.cy + (fdy || 0);
+      //   const tx = b2.l, ty = b2.cy + (tdy || 0);
+      //   const midX = (a.r + b2.l) / 2;
+      //   addLine(svg, orth(fx, fy, tx, ty, { midX }), color, marker, dash);
+      // }
 
-      function overTop(fromId, fdy, toId, color, marker, dash) {
-        const a = get(fromId), b2 = get(toId);
-        if (!a || !b2) return;
-        const fx = a.r, fy = a.cy + (fdy || 0);
-        const tx = b2.cx, ty = b2.t;
-        const busY = 6;
-        const rightX = Math.max(a.r, b2.r) + 28;
-        const d = `M${fx},${fy} L${rightX},${fy} L${rightX},${busY} L${tx},${busY} L${tx},${ty}`;
-        addLine(svg, d, color, marker, dash || '5,3');
-      }
+      // function overTop(fromId, fdy, toId, color, marker, dash) {
+      //   const a = get(fromId), b2 = get(toId);
+      //   if (!a || !b2) return;
+      //   const fx = a.r, fy = a.cy + (fdy || 0);
+      //   const tx = b2.cx, ty = b2.t;
+      //   const busY = 6;
+      //   const rightX = Math.max(a.r, b2.r) + 28;
+      //   const d = `M${fx},${fy} L${rightX},${fy} L${rightX},${busY} L${tx},${busY} L${tx},${ty}`;
+      //   addLine(svg, d, color, marker, dash || '5,3');
+      // }
 
-      function overTopLeft(fromId, fdy, toId, color, marker, dash) {
-        const a = get(fromId), b2 = get(toId);
-        if (!a || !b2) return;
-        const fx = a.l, fy = a.cy + (fdy || 0);
-        const tx = b2.cx, ty = b2.t;
-        const busY = 6;
-        const leftX = Math.min(a.l, b2.l) - 24;
-        const d = `M${fx},${fy} L${leftX},${fy} L${leftX},${busY} L${tx},${busY} L${tx},${ty}`;
-        addLine(svg, d, color, marker, dash || '5,3');
-      }
+      // function overTopLeft(fromId, fdy, toId, color, marker, dash) {
+      //   const a = get(fromId), b2 = get(toId);
+      //   if (!a || !b2) return;
+      //   const fx = a.l, fy = a.cy + (fdy || 0);
+      //   const tx = b2.cx, ty = b2.t;
+      //   const busY = 6;
+      //   const leftX = Math.min(a.l, b2.l) - 24;
+      //   const d = `M${fx},${fy} L${leftX},${fy} L${leftX},${busY} L${tx},${busY} L${tx},${ty}`;
+      //   addLine(svg, d, color, marker, dash || '5,3');
+      // }
 
-      /* ── GEO chain ── */
-      vc('countries', 'governorates', '#f59e0b', 'arr-amber');
-      vc('governorates', 'cities', '#f59e0b', 'arr-amber');
+      // /* ── GEO chain ── */
+      // vc('countries', 'governorates', '#f59e0b', 'arr-amber');
+      // vc('governorates', 'cities', '#f59e0b', 'arr-amber');
 
-      /* ── GEO → users (cities → users) ── */
-      hc('cities', 0, 'users', 15, '#f59e0b', 'arr-amber');
+      // /* ── GEO → users (cities → users) ── */
+      // hc('cities', 0, 'users', 15, '#f59e0b', 'arr-amber');
 
-      /* ── GEO → pharmacies (cities → pharmacies) ── */
-      overTop('cities', -10, 'pharmacies', '#f59e0b', 'arr-amber');
+      // /* ── GEO → pharmacies (cities → pharmacies) ── */
+      // overTop('cities', -10, 'pharmacies', '#f59e0b', 'arr-amber');
 
-      /* ── USER chain ── */
-      vc('users', 'notifications', '#3b82f6', 'arr-blue');
-      vc('notifications', 'search_logs', '#14b8a6', 'arr-teal');
+      // /* ── USER chain ── */
+      // vc('users', 'notifications', '#3b82f6', 'arr-blue');
+      // vc('notifications', 'search_logs', '#14b8a6', 'arr-teal');
 
-      /* ── DRUG chain ── */
-      vc('drug_categories', 'drugs', '#22c55e', 'arr-green');
-      vc('drugs', 'drug_tags', '#22c55e', 'arr-green');
-      vc('drug_tags', 'drug_alternatives', '#22c55e', 'arr-green');
+      // /* ── DRUG chain ── */
+      // vc('drug_categories', 'drugs', '#22c55e', 'arr-green');
+      // vc('drugs', 'drug_tags', '#22c55e', 'arr-green');
+      // vc('drug_tags', 'drug_alternatives', '#22c55e', 'arr-green');
 
-      /* ── PHARMACY chain ── */
-      vc('pharmacies', 'pharmacy_staff', '#f97316', 'arr-orange');
-      vc('pharmacy_staff', 'pharmacy_inventory', '#f97316', 'arr-orange');
+      // /* ── PHARMACY chain ── */
+      // vc('pharmacies', 'pharmacy_staff', '#f97316', 'arr-orange');
+      // vc('pharmacy_staff', 'pharmacy_inventory', '#f97316', 'arr-orange');
 
-      /* ── ANALYTICS chain ── */
-      vc('price_history', 'availability_history', '#8b5cf6', 'arr-purple');
-      vc('availability_history', 'demand_logs', '#8b5cf6', 'arr-purple');
-      vc('demand_logs', 'drug_analytics', '#8b5cf6', 'arr-purple');
-      vc('drug_analytics', 'alerts', '#8b5cf6', 'arr-purple');
+      // /* ── ANALYTICS chain ── */
+      // vc('price_history', 'availability_history', '#8b5cf6', 'arr-purple');
+      // vc('availability_history', 'demand_logs', '#8b5cf6', 'arr-purple');
+      // vc('demand_logs', 'drug_analytics', '#8b5cf6', 'arr-purple');
+      // vc('drug_analytics', 'alerts', '#8b5cf6', 'arr-purple');
 
-      /* ── users → pharmacy_staff (cross columns) ── */
-      overTop('users', -20, 'pharmacy_staff', '#3b82f6', 'arr-blue');
+      // /* ── users → pharmacy_staff (cross columns) ── */
+      // overTop('users', -20, 'pharmacy_staff', '#3b82f6', 'arr-blue');
 
-      /* ── users → favorites ── */
-      overTop('users', -10, 'favorites', '#3b82f6', 'arr-blue');
+      // /* ── users → favorites ── */
+      // overTop('users', -10, 'favorites', '#3b82f6', 'arr-blue');
 
-      /* ── users → pharmacy_ratings ── */
-      overTop('users', 0, 'pharmacy_ratings', '#3b82f6', 'arr-blue');
+      // /* ── users → pharmacy_ratings ── */
+      // overTop('users', 0, 'pharmacy_ratings', '#3b82f6', 'arr-blue');
 
-      /* ── drugs → pharmacy_inventory ── */
-      hc('drugs', 20, 'pharmacy_inventory', 10, '#22c55e', 'arr-green');
+      // /* ── drugs → pharmacy_inventory ── */
+      // hc('drugs', 20, 'pharmacy_inventory', 10, '#22c55e', 'arr-green');
 
-      /* ── drugs → analytics (staggered) ── */
-      const analTargets = [
-        { id: 'price_history', dy: -40 },
-        { id: 'availability_history', dy: -26 },
-        { id: 'demand_logs', dy: -12 },
-        { id: 'drug_analytics', dy: 2 },
-        { id: 'alerts', dy: 16 },
-      ];
-      analTargets.forEach(({ id, dy }) => {
-        const a = get('drugs'), b2 = get(id);
-        if (!a || !b2) return;
-        const fx = a.r, fy = a.cy + dy;
-        const tx = b2.l, ty = b2.cy;
-        const midX = a.r + (b2.l - a.r) * 0.5;
-        addLine(svg, orth(fx, fy, tx, ty, { midX }), '#22c55e', 'arr-green', '4,3');
-      });
+      // /* ── drugs → analytics (staggered) ── */
+      // const analTargets = [
+      //   { id: 'price_history', dy: -40 },
+      //   { id: 'availability_history', dy: -26 },
+      //   { id: 'demand_logs', dy: -12 },
+      //   { id: 'drug_analytics', dy: 2 },
+      //   { id: 'alerts', dy: 16 },
+      // ];
+      // analTargets.forEach(({ id, dy }) => {
+      //   const a = get('drugs'), b2 = get(id);
+      //   if (!a || !b2) return;
+      //   const fx = a.r, fy = a.cy + dy;
+      //   const tx = b2.l, ty = b2.cy;
+      //   const midX = a.r + (b2.l - a.r) * 0.5;
+      //   addLine(svg, orth(fx, fy, tx, ty, { midX }), '#22c55e', 'arr-green', '4,3');
+      // });
 
-      /* ── pharmacies → analytics (price, availability, alerts) ── */
-      [{ id: 'price_history', dy: -18 }, { id: 'availability_history', dy: -6 }, { id: 'alerts', dy: 6 }].forEach(({ id, dy }) => {
-        const a = get('pharmacies'), b2 = get(id);
-        if (!a || !b2) return;
-        const fx = a.r, fy = a.cy + dy;
-        const tx = b2.l, ty = b2.cy;
-        const midX = (a.r + b2.l) / 2;
-        addLine(svg, orth(fx, fy, tx, ty, { midX }), '#f97316', 'arr-orange');
-      });
+      // /* ── pharmacies → analytics (price, availability, alerts) ── */
+      // [{ id: 'price_history', dy: -18 }, { id: 'availability_history', dy: -6 }, { id: 'alerts', dy: 6 }].forEach(({ id, dy }) => {
+      //   const a = get('pharmacies'), b2 = get(id);
+      //   if (!a || !b2) return;
+      //   const fx = a.r, fy = a.cy + dy;
+      //   const tx = b2.l, ty = b2.cy;
+      //   const midX = (a.r + b2.l) / 2;
+      //   addLine(svg, orth(fx, fy, tx, ty, { midX }), '#f97316', 'arr-orange');
+      // });
 
-      /* ── drugs → favorites ── */
-      hc('drugs', -20, 'favorites', -10, '#22c55e', 'arr-green');
+      // /* ── drugs → favorites ── */
+      // hc('drugs', -20, 'favorites', -10, '#22c55e', 'arr-green');
 
-      /* ── pharmacies → pharmacy_ratings ── */
-      hc('pharmacies', 20, 'pharmacy_ratings', 10, '#f97316', 'arr-orange');
+      // /* ── pharmacies → pharmacy_ratings ── */
+      // hc('pharmacies', 20, 'pharmacy_ratings', 10, '#f97316', 'arr-orange');
     }
 
     /* ══════════════════════════════════════════════════════════════════
