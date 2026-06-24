@@ -735,7 +735,7 @@
       },
       {
         id: 'pharmacy_staff', cat: 'فئة: الصيدليات', cls: 'cat-pharmacy', tag: 'PHARMACY',
-        desc: 'موظفو الصيدليات. جدول وسيط يربط users بـ pharmacies.',
+        desc: 'موظفو الصيدليات. جدول وسيط يربط users بـ pharmacies. دا كل فكرتو عشان الناس اللى تقدر توصل للداشبورد بتاع الصيدلية دى ',
         cols: [
           { key: 'PK', name: 'id', type: 'bigint' },
           { key: 'FK', name: 'user_id', cdesc: 'مرتبط بـ users.id', type: 'bigint' },
@@ -757,7 +757,7 @@
           { key: 'FK', name: 'pharmacy_id', cdesc: 'مرتبط بـ pharmacies.id', type: 'bigint' },
           { key: 'FK', name: 'drug_id', cdesc: 'مرتبط بـ drugs.id', type: 'bigint' },
           { key: '', name: 'quantity', cdesc: 'الكمية المتاحة', type: 'int' },
-          { key: '', name: 'minimum_stock', cdesc: 'الحد الادنى للتنبيه', type: 'int' },
+
           { key: '', name: 'price', cdesc: 'سعر البيع هنا', type: 'decimal' },
           { key: '', name: 'last_updated', type: 'timestamp' },
         ],
